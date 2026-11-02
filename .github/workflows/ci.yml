@@ -1,0 +1,38 @@
+name: CI
+
+# Builds and packages pull requests so problems show up before merging; the result is attached as an
+# artifact for testing. Releases are handled by release.yml on main.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build
+        shell: cmd
+        run: build.bat 0.0.0
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup --no-progress -y
+          }
+
+      - name: Package
+        shell: pwsh
+        run: ./scripts/package.ps1 -Version 0.0.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: brightkeys-${{ github.sha }}
+          path: dist/
+          retention-days: 14

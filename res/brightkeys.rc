@@ -1,0 +1,31 @@
+#include <windows.h>
+#include "version.h"
+
+1 ICON "brightkeys.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "brightkeys.manifest"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION BK_VERSION_MAJOR,BK_VERSION_MINOR,BK_VERSION_PATCH,0
+ PRODUCTVERSION BK_VERSION_MAJOR,BK_VERSION_MINOR,BK_VERSION_PATCH,0
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName", "Tejashwi Kalp Taru"
+      VALUE "FileDescription", "BrightKeys - external monitor brightness hotkeys (DDC/CI)"
+      VALUE "FileVersion", BK_VERSION_STR
+      VALUE "InternalName", "BrightKeys"
+      VALUE "LegalCopyright", "Copyright (c) 2026 Tejashwi Kalp Taru. MIT License."
+      VALUE "OriginalFilename", "BrightKeys.exe"
+      VALUE "ProductName", "BrightKeys"
+      VALUE "ProductVersion", BK_VERSION_STR
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

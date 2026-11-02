@@ -1,0 +1,12 @@
+# Build output
+build/
+dist/
+out/
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.user
+CMakeSettings.json
+CMakeUserPresets.json

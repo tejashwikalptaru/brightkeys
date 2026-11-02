@@ -1,0 +1,41 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: BrightKeys version
+      description: Right-click the tray icon → About BrightKeys
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: input
+    id: monitor
+    attributes:
+      label: Monitor model and connection
+      placeholder: Acer EB321HQU over DisplayPort, DDC/CI enabled
+  - type: input
+    id: keyboard
+    attributes:
+      label: Keyboard model
+      description: For hotkey problems, also say what the "Add brightness up key…" window shows when you press the key.
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed with
+      options: [Installer, Portable zip, Built from source]
