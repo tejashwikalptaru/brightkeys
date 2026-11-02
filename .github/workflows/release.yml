@@ -19,7 +19,8 @@ on:
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/dependabot.yml'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'   # CI-only changes (incl. Dependabot action bumps) don't need a release
+      - '.github/pull_request_template.md'
       - '.editorconfig'
       - '.gitignore'
   workflow_dispatch:

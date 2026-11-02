@@ -145,7 +145,8 @@ Every merge to `main` builds and publishes a release automatically. The version 
 | `feat: …` | minor: 1.**2**.3 → 1.**3**.0 |
 | `feat!: …` or a `BREAKING CHANGE:` footer | major: **1**.2.3 → **2**.0.0 |
 
-Documentation-only changes don't create a release.
+Changes that only touch documentation or CI workflows don't create a release. To release them anyway,
+run the *Release* workflow manually from the Actions tab.
 
 ## Contributing
 
