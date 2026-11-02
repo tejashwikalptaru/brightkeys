@@ -36,6 +36,7 @@ add_executable(BrightKeys WIN32
   src/popup.c
   src/settings.c
   src/tray.c
+  src/welcome.c
   res/brightkeys.rc)
 
 set_target_properties(BrightKeys PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED ON)

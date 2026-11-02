@@ -59,11 +59,15 @@ static LRESULT CALLBACK MainProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         POINT pt = { GET_X_LPARAM(wp), GET_Y_LPARAM(wp) };
         switch (LOWORD(lp)) {
         case NIN_SELECT:
-        case NIN_KEYSELECT:  PopupToggle(pt); break;
-        case WM_CONTEXTMENU: TrayShowMenu(pt); break;
+        case NIN_KEYSELECT:  WelcomeClose(); PopupToggle(pt); break;
+        case WM_CONTEXTMENU: WelcomeClose(); TrayShowMenu(pt); break;
         }
         return 0;
     }
+    case WM_APP_ACTIVATE:   /* launched again while running: show the slider so the user sees we're here */
+        WelcomeClose();
+        PopupShow(TrayAnchor());
+        return 0;
     case WM_APP_STEP:     BrightnessStep(wp == 1 ? 1 : -1); return 0;
     case WM_APP_READDONE: BrightnessOnReadDone((int)wp - 1); return 0;
     case WM_APP_MONITORS: BrightnessOnMonitors((int)wp); return 0;
@@ -108,22 +112,35 @@ static BOOL InstalledBySetup(void)
     return GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES;
 }
 
-static void OnFirstRun(void)
+/* Tell the user where the app went. A start at sign-in stays silent; anything else gets feedback. */
+static void AnnounceStart(BOOL autostart)
 {
-    g_cfg.firstRunDone = TRUE;
-    SettingsSave();
-    if (!InstalledBySetup()) AutostartSet(TRUE);   /* portable copy: start with Windows by default */
-    TrayBalloon(APP_NAME L" is running",
-                L"Use your keyboard's brightness keys or Ctrl+Alt+PgUp / PgDn. "
-                L"Left-click the tray icon for a slider, right-click for options.");
+    if (!g_cfg.firstRunDone) {
+        g_cfg.firstRunDone = TRUE;
+        SettingsSave();
+        if (!InstalledBySetup()) AutostartSet(TRUE);   /* portable copy: start with Windows by default */
+        WelcomeShow();
+        return;
+    }
+    if (AutostartEnabled()) AutostartSet(TRUE);        /* keep the path and arguments current */
+    if (!autostart) OsdShow(-1, APP_NAME L" is running in the system tray");
 }
 
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR cmdLine, int show)
 {
-    (void)hPrev; (void)cmdLine; (void)show;
+    (void)hPrev; (void)show;
+    BOOL autostart = cmdLine && wcsstr(cmdLine, ARG_AUTOSTART) != NULL;
 
     HANDLE mutex = CreateMutexW(NULL, TRUE, L"Local\\BrightKeys.SingleInstance");
-    if (GetLastError() == ERROR_ALREADY_EXISTS) return 0;
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        /* Already running: ask that instance to show itself, and let it take the foreground. */
+        HWND other = FindWindowW(CLASS_MAIN, NULL);
+        if (other && !autostart) {
+            AllowSetForegroundWindow(ASFW_ANY);
+            PostMessageW(other, WM_APP_ACTIVATE, 0, 0);
+        }
+        return 0;
+    }
 
     g_hInst = hInst;
     SettingsLoad();
@@ -148,9 +165,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR cmdLine, int show)
     InputStart(g_hwndMain);
     TrayInit(g_hwndMain);
 
-    if (!g_cfg.firstRunDone) OnFirstRun();
-    else if (AutostartEnabled()) AutostartSet(TRUE);   /* keep the path current if the exe moved */
-
+    AnnounceStart(autostart);
     BrightnessSync();
 
     MSG m;

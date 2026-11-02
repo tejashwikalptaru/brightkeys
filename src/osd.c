@@ -3,6 +3,7 @@
 #include "brightkeys.h"
 
 #define OSD_VISIBLE_MS 1500
+#define OSD_MESSAGE_MS 3500   /* text needs longer to read than a level bar */
 
 static HWND  s_hwnd;
 static int   s_value;
@@ -81,5 +82,5 @@ void OsdShow(int value, const WCHAR *msg)
     SetWindowPos(s_hwnd, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
     InvalidateRect(s_hwnd, NULL, FALSE);
     UpdateWindow(s_hwnd);
-    SetTimer(s_hwnd, TIMER_OSD_HIDE, OSD_VISIBLE_MS, NULL);
+    SetTimer(s_hwnd, TIMER_OSD_HIDE, msg ? OSD_MESSAGE_MS : OSD_VISIBLE_MS, NULL);
 }

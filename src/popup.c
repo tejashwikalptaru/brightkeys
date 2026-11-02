@@ -112,29 +112,24 @@ void PopupCreate(void)
 
 void PopupApplyTheme(void) { ThemeApplyWindow(s_hwnd); }
 
-void PopupToggle(POINT anchor)
+void PopupShow(POINT anchor)
 {
     RECT wa;
-    int dpi;
-    if (IsWindowVisible(s_hwnd)) { Hide(); return; }
-    if (GetTickCount64() - s_hiddenAt < 300) return;   /* the click that deactivated it */
-
+    int dpi, x, y;
     GfxMonitorAt(anchor, &wa, &dpi);
-    int w = S(300), h = S(84), m = S(12);
-    int x = anchor.x - w / 2, y;
-    if (x < wa.left + m) x = wa.left + m;
-    if (x > wa.right - w - m) x = wa.right - w - m;
-    if (anchor.y >= wa.bottom) y = wa.bottom - h - m;          /* taskbar at the bottom */
-    else if (anchor.y <= wa.top) y = wa.top + m;               /* taskbar at the top */
-    else {
-        y = anchor.y - h / 2;
-        if (y < wa.top + m) y = wa.top + m;
-        if (y > wa.bottom - h - m) y = wa.bottom - h - m;
-    }
+    int w = S(300), h = S(84);
+    GfxFlyoutPos(anchor, &wa, w, h, S(12), &x, &y);
     SetWindowPos(s_hwnd, HWND_TOPMOST, x, y, w, h, SWP_SHOWWINDOW);
     SetForegroundWindow(s_hwnd);
     SetFocus(s_hwnd);
     BrightnessSync();
+}
+
+void PopupToggle(POINT anchor)
+{
+    if (IsWindowVisible(s_hwnd)) { Hide(); return; }
+    if (GetTickCount64() - s_hiddenAt < 300) return;   /* the click that deactivated it */
+    PopupShow(anchor);
 }
 
 void PopupRefresh(void)

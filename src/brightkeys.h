@@ -13,6 +13,8 @@
  *   osd.c         on-screen brightness indicator
  *   gfx.c         theme colors and anti-aliased drawing helpers
  *   settings.c    settings.ini, key bindings, autostart
+ *   about.c       About window
+ *   welcome.c     first-run card above the tray
  */
 #pragma once
 
@@ -45,6 +47,10 @@
 #define CLASS_OSD     L"BrightKeysOsd"
 #define CLASS_LEARN   L"BrightKeysLearn"
 #define CLASS_ABOUT   L"BrightKeysAbout"
+#define CLASS_WELCOME L"BrightKeysWelcome"
+
+/* Passed by the "start with Windows" entry so a sign-in start can stay silent. */
+#define ARG_AUTOSTART L"--autostart"
 
 /* Scale a 96-DPI value; expects a local `dpi`. */
 #define S(v) MulDiv((v), dpi, 96)
@@ -55,6 +61,7 @@ enum {
     WM_APP_READDONE,    /* wParam: brightness + 1, or 0 on failure */
     WM_APP_MONITORS,    /* wParam: number of DDC/CI monitors found */
     WM_APP_LEARNED,     /* wParam: 1 = key captured, 0 = cancelled */
+    WM_APP_ACTIVATE,    /* posted by a second launch: show yourself */
 };
 
 enum { TIMER_REPEAT = 1, TIMER_LEARN_HID, TIMER_OSD_HIDE, TIMER_LEARN_HINT };
@@ -145,8 +152,10 @@ void  GfxPill(HDC dc, int l, int t, int r, int b, COLORREF c);
 void  GfxSun(HDC dc, int x, int y, int size, COLORREF c);
 void  GfxDot(HDC dc, int cx, int cy, int r, COLORREF c);
 void  GfxText(HDC dc, const WCHAR *s, RECT *r, UINT fmt, HFONT f, COLORREF c);
+void  GfxRoundRect(HDC dc, int l, int t, int r, int b, int radius, COLORREF c);
 HICON GfxSunIcon(int size, COLORREF c);
 void  GfxMonitorAt(POINT pt, RECT *work, int *dpi);
+void  GfxFlyoutPos(POINT anchor, const RECT *work, int w, int h, int margin, int *x, int *y);
 
 /* ---- tray.c ------------------------------------------------------------------------------ */
 
@@ -157,11 +166,13 @@ void TrayUpdateTip(void);
 void TrayRefreshIcon(void);
 void TrayBalloon(const WCHAR *title, const WCHAR *msg);
 void TrayShowMenu(POINT pt);
+POINT TrayAnchor(void);   /* center of the tray icon, or the tray corner if the icon is hidden */
 
 /* ---- popup.c / osd.c --------------------------------------------------------------------- */
 
 void PopupCreate(void);
 void PopupToggle(POINT anchor);
+void PopupShow(POINT anchor);
 void PopupRefresh(void);
 BOOL PopupDragging(void);
 void PopupApplyTheme(void);
@@ -187,6 +198,11 @@ void LearnFinish(const Binding *b);   /* NULL = cancelled */
 
 void AboutShow(void);
 void OpenUrl(const WCHAR *url);
+
+/* ---- welcome.c --------------------------------------------------------------------------- */
+
+void WelcomeShow(void);
+void WelcomeClose(void);
 
 /* ---- main.c ------------------------------------------------------------------------------ */
 

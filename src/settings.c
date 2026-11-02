@@ -213,8 +213,8 @@ void AutostartSet(BOOL on)
         RegDeleteKeyValueW(HKEY_CURRENT_USER, RUN_KEY, APP_ID);
         return;
     }
-    WCHAR exe[MAX_PATH], cmd[MAX_PATH + 4];
+    WCHAR exe[MAX_PATH], cmd[MAX_PATH + 4 + 16];
     GetModuleFileNameW(NULL, exe, MAX_PATH);
-    swprintf(cmd, MAX_PATH + 4, L"\"%s\"", exe);
+    swprintf(cmd, MAX_PATH + 4 + 16, L"\"%s\" " ARG_AUTOSTART, exe);
     RegSetKeyValueW(HKEY_CURRENT_USER, RUN_KEY, APP_ID, REG_SZ, cmd, (DWORD)((wcslen(cmd) + 1) * sizeof(WCHAR)));
 }

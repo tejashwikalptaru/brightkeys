@@ -72,6 +72,28 @@ void TrayBalloon(const WCHAR *title, const WCHAR *msg)
     Shell_NotifyIconW(NIM_MODIFY, &n);
 }
 
+POINT TrayAnchor(void)
+{
+    NOTIFYICONIDENTIFIER id = { sizeof id };
+    RECT rc;
+    POINT pt;
+    id.hWnd = s_nid.hWnd;
+    id.uID = s_nid.uID;
+    if (SUCCEEDED(Shell_NotifyIconGetRect(&id, &rc)) && rc.right > rc.left) {
+        pt.x = (rc.left + rc.right) / 2;
+        pt.y = (rc.top + rc.bottom) / 2;
+        return pt;
+    }
+    /* Icon hidden in the overflow area: use the notification-area corner of the primary taskbar. */
+    APPBARDATA abd = { sizeof abd };
+    RECT tb = { 0 };
+    if (SHAppBarMessage(ABM_GETTASKBARPOS, &abd)) tb = abd.rc;
+    else GetWindowRect(GetDesktopWindow(), &tb);
+    pt.x = tb.right - 1;
+    pt.y = tb.bottom - 1;
+    return pt;
+}
+
 static void AddBindingItems(HMENU m, const Binding *list, int n, UINT baseId)
 {
     WCHAR name[128], item[160];

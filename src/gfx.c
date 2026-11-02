@@ -144,6 +144,30 @@ void GfxPill(HDC dc, int l, int t, int r, int b, COLORREF c)
     RoundRect(dc, l, t, r + 1, b + 1, b - t, b - t);
 }
 
+void GfxRoundRect(HDC dc, int l, int t, int r, int b, int radius, COLORREF c)
+{
+    SetDCBrushColor(dc, c);
+    SelectObject(dc, GetStockObject(DC_BRUSH));
+    SelectObject(dc, GetStockObject(NULL_PEN));
+    RoundRect(dc, l, t, r + 1, b + 1, 2 * radius, 2 * radius);
+}
+
+/* Places a w x h flyout next to an anchor on the taskbar (any edge), kept inside the work area. */
+void GfxFlyoutPos(POINT anchor, const RECT *wa, int w, int h, int m, int *x, int *y)
+{
+    *x = anchor.x - w / 2;
+    if (anchor.x >= wa->right) *x = wa->right - w - m;        /* taskbar on the right */
+    else if (anchor.x <= wa->left) *x = wa->left + m;         /* taskbar on the left */
+    if (*x < wa->left + m) *x = wa->left + m;
+    if (*x > wa->right - w - m) *x = wa->right - w - m;
+
+    if (anchor.y >= wa->bottom) *y = wa->bottom - h - m;      /* taskbar at the bottom */
+    else if (anchor.y <= wa->top) *y = wa->top + m;           /* taskbar at the top */
+    else *y = anchor.y - h / 2;
+    if (*y < wa->top + m) *y = wa->top + m;
+    if (*y > wa->bottom - h - m) *y = wa->bottom - h - m;
+}
+
 typedef void (*ShapeFn)(HDC dc, int w, int h);
 
 static void ShapeSun(HDC dc, int w, int h)
