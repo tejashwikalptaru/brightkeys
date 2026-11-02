@@ -14,6 +14,7 @@
   <a href="https://github.com/tejashwikalptaru/brightkeys/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/tejashwikalptaru/brightkeys/release.yml?branch=main" alt="Build status"></a>
   <a href="https://github.com/tejashwikalptaru/brightkeys/releases"><img src="https://img.shields.io/github/downloads/tejashwikalptaru/brightkeys/total" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/tejashwikalptaru/brightkeys" alt="MIT License"></a>
+  <a href="#verify-your-download"><img src="https://img.shields.io/badge/scanned-Defender%20%2B%20VirusTotal-2ea44f" alt="Scanned with Microsoft Defender and VirusTotal"></a>
 </p>
 
 <p align="center">
@@ -51,9 +52,29 @@ Get the latest version from **[Releases](https://github.com/tejashwikalptaru/bri
 **Requirements:** Windows 10 or 11 and a monitor with **DDC/CI** support. Most monitors from the last
 decade have it, but some ship with it switched off. Look for "DDC/CI" in the monitor's on-screen menu.
 
-> **Windows SmartScreen** may warn about an unrecognized app, because the binaries aren't code-signed.
-> Choose *More info → Run anyway*. Every release is built from source by GitHub Actions, with checksums in
-> `SHA256SUMS.txt`.
+> **Windows SmartScreen** may warn about an unrecognized app, because the binaries aren't code-signed yet.
+> Choose *More info → Run anyway*. See below for how each release is checked.
+
+### Verify your download
+
+Every release is built and checked entirely by GitHub Actions. Nothing is built or uploaded by hand.
+
+| Check | What it means |
+|---|---|
+| **Built from source in CI** | Each release links to the exact commit and workflow run that produced it |
+| **Microsoft Defender** | The files are scanned with up-to-date signatures before publishing; a detection blocks the release |
+| **VirusTotal** | Each release's notes link to the VirusTotal reports (70+ antivirus engines) for its files |
+| **Build provenance** | Files are signed with [Sigstore](https://www.sigstore.dev/) build attestations, checkable with the GitHub CLI |
+| **Checksums** | `SHA256SUMS.txt` is attached to every release |
+
+```sh
+gh attestation verify BrightKeys-1.0.0-setup-x64.exe -R tejashwikalptaru/brightkeys
+```
+
+BrightKeys uses a low-level keyboard hook to detect its hotkeys. It only compares key presses against your
+bindings, and it never logs, stores or sends anything. It makes no network connections at all. Because keyboard
+hooks are also used by malware, an occasional heuristic false positive from a lesser-known engine is
+possible; please [report it](https://github.com/tejashwikalptaru/brightkeys/issues) if you see one.
 
 ## Usage
 
