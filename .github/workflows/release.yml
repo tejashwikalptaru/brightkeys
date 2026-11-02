@@ -35,11 +35,16 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: write       # create the tag and release
+  id-token: write       # sign build provenance (Sigstore)
+  attestations: write   # store build provenance
 
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      # Optional. Free key from virustotal.com; without it the VirusTotal step is skipped.
+      VT_API_KEY: ${{ secrets.VT_API_KEY }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -68,6 +73,34 @@ jobs:
         shell: pwsh
         run: ./scripts/package.ps1 -Version ${{ steps.version.outputs.version }}
 
+      # Gate: a detection fails the job, so nothing is published.
+      - name: Scan with Microsoft Defender
+        id: defender
+        if: steps.version.outputs.release == 'true'
+        shell: pwsh
+        run: ./scripts/scan-defender.ps1 -Path dist
+
+      # Signed statement that these files were built by this workflow from this commit.
+      # Verify with: gh attestation verify <file> -R tejashwikalptaru/brightkeys
+      - name: Attest build provenance
+        if: steps.version.outputs.release == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/*.exe
+            dist/*.zip
+
+      - name: Scan with VirusTotal
+        id: virustotal
+        if: steps.version.outputs.release == 'true' && env.VT_API_KEY != ''
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ env.VT_API_KEY }}
+          request_rate: 4   # free API tier: 4 requests per minute
+          files: |
+            dist/*.exe
+            dist/*.zip
+
       - name: Publish release
         if: steps.version.outputs.release == 'true'
         shell: pwsh
@@ -75,7 +108,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
           TAG: ${{ steps.version.outputs.tag }}
+          DEFENDER: ${{ steps.defender.outputs.summary }}
+          VT_ANALYSIS: ${{ steps.virustotal.outputs.analysis }}
         run: |
+          # VirusTotal output: "dist/file1=url1,dist/file2=url2"
+          $vt = if ($env:VT_ANALYSIS) {
+            ($env:VT_ANALYSIS -split ',' | ForEach-Object {
+              $file, $url = $_ -split '=', 2
+              "[$(Split-Path $file -Leaf)]($url)"
+            }) -join ' · '
+          } else { '_not configured for this release_' }
+          $repo = $env:GITHUB_REPOSITORY
+          $run = "$env:GITHUB_SERVER_URL/$repo/actions/runs/$env:GITHUB_RUN_ID"
+
           $notes = @"
           ## Download
 
@@ -86,6 +131,16 @@ jobs:
           | ``SHA256SUMS.txt`` | Checksums |
 
           Requires Windows 10 or 11 and a monitor with DDC/CI enabled in its on-screen menu.
+
+          ## Security
+
+          - **Built in the open:** compiled from commit $env:GITHUB_SHA by [this GitHub Actions run]($run). No local builds.
+          - **Microsoft Defender:** ✅ $env:DEFENDER, checked before publishing.
+          - **VirusTotal (70+ engines):** $vt
+          - **Build provenance:** signed with Sigstore. Verify a download with
+            ``gh attestation verify BrightKeys-$env:VERSION-setup-x64.exe -R $repo``
+
+          Windows SmartScreen may still show an "unrecognized app" prompt because the binaries are not code-signed.
           "@
           gh release create $env:TAG (Get-ChildItem dist -File).FullName `
             --target $env:GITHUB_SHA `
