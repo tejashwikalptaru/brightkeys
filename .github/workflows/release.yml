@@ -84,7 +84,7 @@ jobs:
       # Verify with: gh attestation verify <file> -R tejashwikalptaru/brightkeys
       - name: Attest build provenance
         if: steps.version.outputs.release == 'true'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: |
             dist/*.exe
