@@ -148,6 +148,29 @@ Every merge to `main` builds and publishes a release automatically. The version 
 Changes that only touch documentation or CI workflows don't create a release. To release them anyway,
 run the *Release* workflow manually from the Actions tab.
 
+## Code signing policy
+
+Windows releases are intended to be signed through the SignPath Foundation's free program for open-source
+projects. **Status:** application pending. Until it's approved, releases are unsigned (see
+[Verify your download](#verify-your-download)).
+
+Once approved: free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).
+
+- Only binaries built from this repository's source by the [release workflow](.github/workflows/release.yml) are signed.
+- Every signing request is approved manually by an approver.
+
+**Team roles**
+
+| Role | Members |
+|---|---|
+| Committers and reviewers | [@tejashwikalptaru](https://github.com/tejashwikalptaru) |
+| Approvers | [@tejashwikalptaru](https://github.com/tejashwikalptaru) |
+
+**Privacy policy:** This program will not transfer any information to other networked systems unless
+specifically requested by the user or the person installing or operating it. ("Check for updates" and the
+links in the About window only open pages in your browser when you click them.)
+
 ## Contributing
 
 Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
