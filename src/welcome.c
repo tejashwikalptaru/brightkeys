@@ -45,6 +45,12 @@ static int Layout(HDC dc, int dpi, int width, BOOL draw)
     Text(dc, L"\x2022", x, y, S(14), body, g_th.text, draw);
     y = Text(dc, L"Click the sun icon in the tray for a brightness slider. Right-click it for "
                  L"settings and hotkeys.", bx, y, w - S(14), body, g_th.text, draw);
+    if (AutostartEnabled()) {   /* say so whenever we start with Windows; never change that silently */
+        y += S(6);
+        Text(dc, L"\x2022", x, y, S(14), body, g_th.text, draw);
+        y = Text(dc, L"It will start automatically when you sign in. You can turn this off with "
+                     L"\"Start with Windows\" in the tray menu.", bx, y, w - S(14), body, g_th.text, draw);
+    }
     y = Text(dc, L"Don't see the icon? Click \x2227 next to the clock to show hidden icons. You can drag "
                  L"BrightKeys onto the taskbar to keep it visible.", x, y + S(12), w, small, g_th.sub, draw);
     HGDIOBJ old = SelectObject(dc, body);
